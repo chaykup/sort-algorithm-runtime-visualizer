@@ -425,7 +425,7 @@ class SortAlgoAnalyzer:
         self.ax.set_ylabel('Runtime (Microseconds)')
         self.ax.set_title('Time Complexity of Sorting Algorithms')
 
-        # Prevent bars from passing top of graph
+        # Prevent bars from passing top of graph and set colors
         colors = ['navy', 'cornflowerblue', 'lightskyblue', 'mediumseagreen', 'springgreen', 'gold', 'orange', 'coral', 'gainsboro']
         self.bars = self.ax.bar(titles, [0] * len(titles), color=colors)
         self.ax.set_ylim(0, max(runtimes) * 1.15)
