@@ -11,6 +11,7 @@ matplotlib.use('TkAgg')
 
 import time
 import random
+import numpy as np 
 import tkinter as tk
 from tkinter import messagebox
 import matplotlib.pyplot as plt
@@ -425,10 +426,13 @@ class SortAlgoAnalyzer:
         self.ax.set_ylabel('Runtime (Microseconds)')
         self.ax.set_title('Time Complexity of Sorting Algorithms')
 
+        # Convert runtimes list to homogeneous numpy array to increase speed
+        runtimes = np.asarray(runtimes, dtype=float)
+
         # Prevent bars from passing top of graph and set colors
         colors = ['navy', 'cornflowerblue', 'lightskyblue', 'mediumseagreen', 'springgreen', 'gold', 'orange', 'coral', 'gainsboro']
-        self.bars = self.ax.bar(titles, [0] * len(titles), color=colors)
-        self.ax.set_ylim(0, max(runtimes) * 1.15)
+        self.bars = self.ax.bar(titles, np.zeros_like(runtimes), color=colors)
+        self.ax.set_ylim(0, float(runtimes.max() * 1.15))
 
         # Rotate algorithm names
         self.ax.tick_params(axis='x', pad=10)  
@@ -440,19 +444,29 @@ class SortAlgoAnalyzer:
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(0,20))
 
-        # Create bar growth animation
-        frames_grow = list(range(0,101))
-        frames_stop = [100] * 100
-        frames = frames_grow + frames_stop
+        # Mark bars as animated so blit only redraws them
+        for rect in self.bars:
+            rect.set_animated(True)
 
-        def update(frame_pct):
-            for bar, rt in zip(self.bars, runtimes):
-                bar.set_height(rt * (frame_pct / 100.0))
-            return self.bars
+        duration = 6.5
+        start = time.perf_counter()
+
+        def update(i):
+            t = time.perf_counter() - start
+            alpha = t / duration
+            if alpha >= 1.0:
+                alpha = 1.0
+            alpha = 1 - (1 - alpha) ** 3
+
+            for rect, rt in zip(self.bars, runtimes):
+                rect.set_height(rt * alpha)
+            if alpha >= 1.0:
+                self.ani.event_source.stop()
+
+            return tuple(self.bars)
         
-        self.ani = animation.FuncAnimation(self.fig, update, frames=frames, interval=5, blit=True, repeat=False)
+        self.ani = animation.FuncAnimation(self.fig, func=update, interval=16, blit=True, repeat=False, cache_frame_data=False)
         self.is_paused = False
-        self.canvas.draw_idle()
 
 def main():
     root = tk.Tk()
