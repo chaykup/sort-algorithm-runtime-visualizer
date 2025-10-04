@@ -450,7 +450,7 @@ class SortAlgoAnalyzer:
                 bar.set_height(rt * (frame_pct / 100.0))
             return self.bars
         
-        self.ani = animation.FuncAnimation(self.fig, update, frames=frames, interval=5, blit=False, repeat=False)
+        self.ani = animation.FuncAnimation(self.fig, update, frames=frames, interval=5, blit=True, repeat=False)
         self.is_paused = False
         self.canvas.draw_idle()
 
